@@ -3,70 +3,53 @@ using System.Collections.Generic;
 using System.Net.Http;
 using System.Text.Json;
 using System.Threading.Tasks;
+using RandomUserAPI.Model;
+using Npgsql;
 
-// Random User API'sinin ana yapısı
-public class RandomUserResponse
-{
-    public List<Result> results { get; set; }
-    public Info info { get; set; }
-}
+using HttpClient client = new HttpClient();
+string url = "https://randomuser.me/api/?results=5";
+string connectionString = "Host=localhost;Username=postgres;Password=alperen4423;Database=postgres";
 
-public class Result
+try
 {
-    public string gender { get; set; }
-    public Name name { get; set; }
-    // Daha fazla alan ekleyebilirsin
-}
+    HttpResponseMessage response = await client.GetAsync(url);
+    response.EnsureSuccessStatusCode();
+    string jsonResponse = await response.Content.ReadAsStringAsync();
 
-public class Name
-{
-    public string title { get; set; }
-    public string first { get; set; }
-    public string last { get; set; }
-}
 
-public class Info
-{
-    public string seed { get; set; }
-    public int results { get; set; }
-    public int page { get; set; }
-    public string version { get; set; }
-}
+    // JSON verisini nesneye dönüştürme
+    RandomUserResponse data = JsonSerializer.Deserialize<RandomUserResponse>(jsonResponse);
 
-class Program
-{
-    static async Task Main()
+
+    // Veriye erişim: kullanıcının adını yazdırıyoruz
+    if (data.results.Count > 0)
     {
-        using HttpClient client = new HttpClient();
-        string url = "https://randomuser.me/api/?results=5";
+        using var conn = new NpgsqlConnection(connectionString);
+        await conn.OpenAsync();
 
-        try
+        foreach (var user in data.results)
         {
-            HttpResponseMessage response = await client.GetAsync(url);
-            response.EnsureSuccessStatusCode();
+            string query = "INSERT INTO users (title, first_name, last_name, gender) VALUES (@title, @first, @last, @gender)";
+            using var cmd = new NpgsqlCommand(query, conn);
+            cmd.Parameters.AddWithValue("title", user.name.title);
+            cmd.Parameters.AddWithValue("first", user.name.first);
+            cmd.Parameters.AddWithValue("last", user.name.last);
+            cmd.Parameters.AddWithValue("gender", user.gender);
 
-            string jsonResponse = await response.Content.ReadAsStringAsync();
-
-            // JSON verisini nesneye dönüştürme
-            RandomUserResponse data = JsonSerializer.Deserialize<RandomUserResponse>(jsonResponse);
-
-            // Veriye erişim: İlk kullanıcının adını yazdırıyoruz
-            
-            if (data.results.Count > 0)
-            {
-                for (int i = 0; i < data.results; i++)
-                {
-                    var firstUser = data.results[i];
-                    Console.WriteLine($"Kullanıcı: {firstUser.name.title} {firstUser.name.first} {firstUser.name.last}");
-                }
-                        
-            }
-            
-            
+            //SQL komutunu veritabanında çalıştırır, etkilenen satır sayısını döndürür. Asenkron olarak çalışır.
+            await cmd.ExecuteNonQueryAsync();
         }
-        catch (Exception ex)
-        {
-            Console.WriteLine("Bir hata oluştu: " + ex.Message);
-        }
+
+        Console.WriteLine("Veriler başarıyla PostgreSQL'e aktarıldı!");
     }
+    else
+    {
+        Console.WriteLine("API'den veri alınamadı.");
+    }
+
 }
+catch (Exception ex)
+{
+    Console.WriteLine("Bir hata oluştu: " + ex.Message);
+}
+Console.ReadKey();
