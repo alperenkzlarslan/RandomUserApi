@@ -213,7 +213,7 @@ namespace RandomUserApi.Controllers
                         cmd.Parameters.AddWithValue("state", user.Location.State);
                         cmd.Parameters.AddWithValue("country", user.Location.Country);
                         cmd.Parameters.AddWithValue("postcode", user.Location.Postcode);
-
+                        
                         // Koordinat bilgileri
                         cmd.Parameters.AddWithValue("latitude", user.Location.Coordinates.Latitude);
                         cmd.Parameters.AddWithValue("longitude", user.Location.Coordinates.Longitude);
@@ -251,8 +251,7 @@ namespace RandomUserApi.Controllers
                         cmd.ExecuteNonQuery();
                     }
                 }
-
-                return StatusCode(StatusCodes.Status201Created, new { message = "Kullanıcı başarıyla oluşturuldu" });
+                return Ok(new { message = "User created successfully" });
             }
             catch (Exception ex)
             {
