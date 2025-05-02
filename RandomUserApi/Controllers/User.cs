@@ -1,4 +1,4 @@
-﻿namespace RandomUserAlperenApi.Controllers.Model
+﻿namespace RandomUserApi.Model
 {
     public class User
     {

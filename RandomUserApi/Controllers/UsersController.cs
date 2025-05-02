@@ -2,6 +2,9 @@
 using Microsoft.AspNetCore.Mvc;
 using Npgsql;
 using Microsoft.Extensions.Configuration;
+using RandomUserApi.Model;
+using System.ComponentModel.DataAnnotations;
+using System.Collections.Generic;
 
 namespace RandomUserApi.Controllers
 {
@@ -25,7 +28,7 @@ namespace RandomUserApi.Controllers
 
             try
             {
-                var users = new List<User>();
+                var users = new List<Result>();
                 var sql = "SELECT * FROM users"; // Temel sorgu
 
                 // Koşullar için bir liste oluşturalım
@@ -73,79 +76,79 @@ namespace RandomUserApi.Controllers
                                 // Hata oluşmadan önce login_sha256 bilgisini alalım.
                                 userSha256 = reader["login_sha256"].ToString();
 
-                                var user = new User //JSON nesnesini oluşturuyoruz.
+                                var user = new Result
                                 {
-                                    Gender = reader["gender"].ToString(),
-                                    Name = new Name
+                                    gender = reader["gender"].ToString(),
+                                    name = new Name
                                     {
-                                        Title = reader["title"].ToString(),
-                                        First = reader["first_name"].ToString(),
-                                        Last = reader["last_name"].ToString()
+                                        title = reader["title"].ToString(),
+                                        first = reader["first_name"].ToString(),
+                                        last = reader["last_name"].ToString()
                                     },
-                                    Location = new Location
+                                    location = new Location
                                     {
-                                        Street = new Street
+                                        street = new Street
                                         {
-                                            Number = reader["street_number"],
-                                            Name = reader["street_name"].ToString()
+                                            number = Convert.ToInt32(reader["street_number"]),
+                                            name = reader["street_name"].ToString()
                                         },
-                                        City = reader["city"].ToString(),
-                                        State = reader["state"].ToString(),
-                                        Country = reader["country"].ToString(),
-                                        Postcode = reader["postcode"],
-                                        Coordinates = new Coordinates
+                                        city = reader["city"].ToString(),
+                                        state = reader["state"].ToString(),
+                                        country = reader["country"].ToString(),
+                                        postcode = reader["postcode"].ToString(),
+                                        coordinates = new Coordinates
                                         {
-                                            Latitude = reader["latitude"].ToString(),
-                                            Longitude = reader["longitude"].ToString()
+                                            latitude = reader["latitude"].ToString(),
+                                            longitude = reader["longitude"].ToString()
                                         },
-                                        Timezone = new Timezone
+                                        timezone = new Timezone
                                         {
-                                            Offset = reader["timezone_offset"].ToString(),
-                                            Description = reader["timezone_description"].ToString()
+                                            offset = reader["timezone_offset"].ToString(),
+                                            description = reader["timezone_description"].ToString()
                                         }
                                     },
-                                    Email = reader["email"].ToString(),
-                                    Login = new Login
+                                    email = reader["email"].ToString(),
+                                    login = new Login
                                     {
-                                        Uuid = reader["login_uuid"].ToString(),
-                                        Username = reader["login_username"].ToString(),
-                                        Password = reader["login_password"].ToString(),
-                                        Salt = reader["login_salt"].ToString(),
-                                        Md5 = reader["login_md5"].ToString(),
-                                        Sha1 = reader["login_sha1"].ToString(),
-                                        Sha256 = reader["login_sha256"].ToString()
+                                        uuid = reader["login_uuid"].ToString(),
+                                        username = reader["login_username"].ToString(),
+                                        password = reader["login_password"].ToString(),
+                                        salt = reader["login_salt"].ToString(),
+                                        md5 = reader["login_md5"].ToString(),
+                                        sha1 = reader["login_sha1"].ToString(),
+                                        sha256 = reader["login_sha256"].ToString()
                                     },
-                                    Dob = new Dob
+                                    dob = new Dob
                                     {
-                                        Date = reader["dob_date"].ToString(),
-                                        Age = reader["dob_age"]
+                                        date = Convert.ToDateTime(reader["dob_date"]),
+                                        age = Convert.ToInt32(reader["dob_age"])
                                     },
-                                    Registered = new Registered
+                                    registered = new Registered
                                     {
-                                        Date = reader["registered_date"].ToString(),
-                                        Age = reader["registered_age"]
+                                        date = Convert.ToDateTime(reader["registered_date"]),
+                                        age = Convert.ToInt32(reader["registered_age"])
                                     },
-                                    Phone = reader["phone"].ToString(),
-                                    Cell = reader["cell"].ToString(),
-                                    Id = new Id
+                                    phone = reader["phone"].ToString(),
+                                    cell = reader["cell"].ToString(),
+                                    id = new Id
                                     {
-                                        Name = reader["id_name"].ToString(),
-                                        Value = reader["id_value"].ToString()
+                                        name = reader["id_name"].ToString(),
+                                        value = reader["id_value"].ToString()
                                     },
-                                    Picture = new Picture
+                                    picture = new Picture
                                     {
-                                        Large = reader["picture_large"].ToString(),
-                                        Medium = reader["picture_medium"].ToString(),
-                                        Thumbnail = reader["picture_thumbnail"].ToString()
+                                        large = reader["picture_large"].ToString(),
+                                        medium = reader["picture_medium"].ToString(),
+                                        thumbnail = reader["picture_thumbnail"].ToString()
                                     },
-                                    Nat = reader["nat"].ToString()
+                                    nat = reader["nat"].ToString()
                                 };
                                 users.Add(user); //Her bir kullanıcı nesnesi, users listesine ekleniyor.
                             }
                         }
                     }
                 }
-                return Ok(new { results = users }); //Tüm kullanıcıları içeren results nesnesini döndürüyoruz.
+                return Ok(new RandomUserResponse { results = users }); //Tüm kullanıcıları içeren results nesnesini döndürüyoruz.
             }
             catch (Exception ex)
             {
@@ -170,8 +173,13 @@ namespace RandomUserApi.Controllers
         }
 
         [HttpPost]
-        public IActionResult CreateUser([FromBody] User user)
+        public IActionResult CreateUser([FromBody] Result user)
         {
+            if (user == null)
+            {
+                return BadRequest(new { error = "User data is required" });
+            }
+
             try
             {
                 using (var conn = new NpgsqlConnection(_connectionString))
@@ -201,57 +209,74 @@ namespace RandomUserApi.Controllers
                     using (var cmd = new NpgsqlCommand(sql, conn))
                     {
                         // Temel bilgiler
-                        cmd.Parameters.AddWithValue("gender", user.Gender);
-                        cmd.Parameters.AddWithValue("title", user.Name.Title);
-                        cmd.Parameters.AddWithValue("firstName", user.Name.First);
-                        cmd.Parameters.AddWithValue("lastName", user.Name.Last);
+                        cmd.Parameters.AddWithValue("gender", user.gender);
+                        cmd.Parameters.AddWithValue("title", user.name?.title);
+                        cmd.Parameters.AddWithValue("firstName", user.name?.first);
+                        cmd.Parameters.AddWithValue("lastName", user.name?.last);
 
                         // Adres bilgileri
-                        cmd.Parameters.AddWithValue("streetNumber", user.Location.Street.Number);
-                        cmd.Parameters.AddWithValue("streetName", user.Location.Street.Name);
-                        cmd.Parameters.AddWithValue("city", user.Location.City);
-                        cmd.Parameters.AddWithValue("state", user.Location.State);
-                        cmd.Parameters.AddWithValue("country", user.Location.Country);
-                        cmd.Parameters.AddWithValue("postcode", user.Location.Postcode);
+                        cmd.Parameters.AddWithValue("streetNumber", user.location?.street?.number);
+                        cmd.Parameters.AddWithValue("streetName", user.location?.street?.name);
+                        cmd.Parameters.AddWithValue("city", user.location?.city);
+                        cmd.Parameters.AddWithValue("state", user.location?.state);
+                        cmd.Parameters.AddWithValue("country", user.location?.country);
+                        cmd.Parameters.AddWithValue("postcode", user.location?.postcode);
                         
                         // Koordinat bilgileri
-                        cmd.Parameters.AddWithValue("latitude", user.Location.Coordinates.Latitude);
-                        cmd.Parameters.AddWithValue("longitude", user.Location.Coordinates.Longitude);
-                        cmd.Parameters.AddWithValue("timezoneOffset", user.Location.Timezone.Offset);
-                        cmd.Parameters.AddWithValue("timezoneDescription", user.Location.Timezone.Description);
+                        cmd.Parameters.AddWithValue("latitude", user.location?.coordinates?.latitude);
+                        cmd.Parameters.AddWithValue("longitude", user.location?.coordinates?.longitude);
+                        cmd.Parameters.AddWithValue("timezoneOffset", user.location?.timezone?.offset);
+                        cmd.Parameters.AddWithValue("timezoneDescription", user.location?.timezone?.description);
 
                         // Kullanıcı bilgileri
-                        cmd.Parameters.AddWithValue("email", user.Email);
-                        cmd.Parameters.AddWithValue("loginUuid", user.Login.Uuid);
-                        cmd.Parameters.AddWithValue("loginUsername", user.Login.Username);
-                        cmd.Parameters.AddWithValue("loginPassword", user.Login.Password);
-                        cmd.Parameters.AddWithValue("loginSalt", user.Login.Salt);
-                        cmd.Parameters.AddWithValue("loginMd5", user.Login.Md5);
-                        cmd.Parameters.AddWithValue("loginSha1", user.Login.Sha1);
-                        cmd.Parameters.AddWithValue("loginSha256", user.Login.Sha256);
+                        cmd.Parameters.AddWithValue("email", user.email);
+                        cmd.Parameters.AddWithValue("loginUuid", user.login?.uuid);
+                        cmd.Parameters.AddWithValue("loginUsername", user.login?.username);
+                        cmd.Parameters.AddWithValue("loginPassword", user.login?.password);
+                        cmd.Parameters.AddWithValue("loginSalt", user.login?.salt);
+                        cmd.Parameters.AddWithValue("loginMd5", user.login?.md5);
+                        cmd.Parameters.AddWithValue("loginSha1", user.login?.sha1);
+                        cmd.Parameters.AddWithValue("loginSha256", user.login?.sha256);
 
                         // Tarih bilgileri
-                        cmd.Parameters.AddWithValue("dobDate", user.Dob.Date);
-                        cmd.Parameters.AddWithValue("dobAge", user.Dob.Age);
-                        cmd.Parameters.AddWithValue("registeredDate", user.Registered.Date);
-                        cmd.Parameters.AddWithValue("registeredAge", user.Registered.Age);
+                        cmd.Parameters.AddWithValue("dobDate", user.dob?.date);
+                        cmd.Parameters.AddWithValue("dobAge", user.dob?.age);
+                        cmd.Parameters.AddWithValue("registeredDate", user.registered?.date);
+                        cmd.Parameters.AddWithValue("registeredAge", user.registered?.age);
 
                         // İletişim bilgileri
-                        cmd.Parameters.AddWithValue("phone", user.Phone);
-                        cmd.Parameters.AddWithValue("cell", user.Cell);
-                        cmd.Parameters.AddWithValue("idName", user.Id.Name);
-                        cmd.Parameters.AddWithValue("idValue", user.Id.Value);
+                        cmd.Parameters.AddWithValue("phone", user.phone);
+                        cmd.Parameters.AddWithValue("cell", user.cell);
+                        cmd.Parameters.AddWithValue("idName", user.id?.name);
+                        cmd.Parameters.AddWithValue("idValue", user.id?.value);
 
                         // Resim bilgileri
-                        cmd.Parameters.AddWithValue("pictureLarge", user.Picture.Large);
-                        cmd.Parameters.AddWithValue("pictureMedium", user.Picture.Medium);
-                        cmd.Parameters.AddWithValue("pictureThumbnail", user.Picture.Thumbnail);
-                        cmd.Parameters.AddWithValue("nat", user.Nat);
+                        cmd.Parameters.AddWithValue("pictureLarge", user.picture?.large);
+                        cmd.Parameters.AddWithValue("pictureMedium", user.picture?.medium);
+                        cmd.Parameters.AddWithValue("pictureThumbnail", user.picture?.thumbnail);
+                        cmd.Parameters.AddWithValue("nat", user.nat);
 
                         cmd.ExecuteNonQuery();
                     }
                 }
-                return Ok(new { message = "User created successfully" });
+
+                try
+                {
+                    using (var conn = new NpgsqlConnection(_connectionString))
+                    {
+                        conn.Open();
+                        var insertCmd = new NpgsqlCommand("INSERT INTO \"Log\" (\"Sha256\", \"ExceptionMessage\") VALUES (@sha256, @message)", conn);
+                        insertCmd.Parameters.AddWithValue("sha256", user.login?.sha256 ?? string.Empty);
+                        insertCmd.Parameters.AddWithValue("message", "User created successfully");
+                        insertCmd.ExecuteNonQuery();
+                    }
+                }
+                catch
+                {
+                    // Log hatası durumunda sessizce devam et
+                }
+
+                return StatusCode(StatusCodes.Status201Created, new { message = "User created successfully" });
             }
             catch (Exception ex)
             {
@@ -261,7 +286,7 @@ namespace RandomUserApi.Controllers
                     {
                         conn.Open();
                         var insertCmd = new NpgsqlCommand("INSERT INTO \"Log\" (\"Sha256\", \"ExceptionMessage\") VALUES (@sha256, @exception)", conn);
-                        insertCmd.Parameters.AddWithValue("sha256", user.Login?.Sha256 ?? string.Empty);
+                        insertCmd.Parameters.AddWithValue("sha256", user.login?.sha256 ?? string.Empty);
                         insertCmd.Parameters.AddWithValue("exception", ex.Message);
                         insertCmd.ExecuteNonQuery();
                     }
