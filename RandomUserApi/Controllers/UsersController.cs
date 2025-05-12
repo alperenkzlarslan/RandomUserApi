@@ -299,5 +299,82 @@ namespace RandomUserApi.Controllers
                 return StatusCode(StatusCodes.Status500InternalServerError, new { error = ex.Message });
             }
         }
+
+        [HttpDelete("{uuid}")]
+        public IActionResult DeleteUser(string uuid)
+        {
+            try
+            {
+                using (var conn = new NpgsqlConnection(_connectionString))
+                {
+                    conn.Open();
+                    var sql = "DELETE FROM users WHERE login_uuid = @uuid";
+                    using (var cmd = new NpgsqlCommand(sql, conn))
+                    {
+                        cmd.Parameters.AddWithValue("uuid", uuid);
+                        int affectedRows = cmd.ExecuteNonQuery();
+                        
+                        if (affectedRows == 0)
+                        {
+                            return NotFound(new { error = "Kullanıcı bulunamadı" });
+                        }
+                    }
+                }
+                return Ok(new { message = "Kullanıcı başarıyla silindi" });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, new { error = ex.Message });
+            }
+        }
+
+        [HttpPut("{uuid}")]
+        public IActionResult UpdateUser(string uuid, [FromBody] Result user)
+        {
+            if (user == null)
+            {
+                return BadRequest(new { error = "Kullanıcı verisi gerekli" });
+            }
+
+            try
+            {
+                using (var conn = new NpgsqlConnection(_connectionString))
+                {
+                    conn.Open();
+                    var sql = @"
+                        UPDATE users SET 
+                            gender = @gender,
+                            title = @title,
+                            first_name = @firstName,
+                            last_name = @lastName,
+                            email = @email,
+                            phone = @phone
+                        WHERE login_uuid = @uuid";
+
+                    using (var cmd = new NpgsqlCommand(sql, conn))
+                    {
+                        cmd.Parameters.AddWithValue("uuid", uuid);
+                        cmd.Parameters.AddWithValue("gender", user.gender);
+                        cmd.Parameters.AddWithValue("title", user.name?.title);
+                        cmd.Parameters.AddWithValue("firstName", user.name?.first);
+                        cmd.Parameters.AddWithValue("lastName", user.name?.last);
+                        cmd.Parameters.AddWithValue("email", user.email);
+                        cmd.Parameters.AddWithValue("phone", user.phone);
+
+                        int affectedRows = cmd.ExecuteNonQuery();
+                        
+                        if (affectedRows == 0)
+                        {
+                            return NotFound(new { error = "Kullanıcı bulunamadı" });
+                        }
+                    }
+                }
+                return Ok(new { message = "Kullanıcı başarıyla güncellendi" });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, new { error = ex.Message });
+            }
+        }
     }
 }
