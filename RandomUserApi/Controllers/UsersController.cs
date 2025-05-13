@@ -376,5 +376,50 @@ namespace RandomUserApi.Controllers
                 return StatusCode(StatusCodes.Status500InternalServerError, new { error = ex.Message });
             }
         }
+
+        [HttpGet("{uuid}")]
+        public IActionResult GetUser(string uuid)
+        {
+            try
+            {
+                using (var conn = new NpgsqlConnection(_connectionString))
+                {
+                    conn.Open();
+                    var sql = "SELECT * FROM users WHERE login_uuid = @uuid";
+                    using (var cmd = new NpgsqlCommand(sql, conn))
+                    {
+                        cmd.Parameters.AddWithValue("uuid", uuid);
+                        using (var reader = cmd.ExecuteReader())
+                        {
+                            if (reader.Read())
+                            {
+                                var user = new Result
+                                {
+                                    gender = reader["gender"].ToString(),
+                                    name = new Name
+                                    {
+                                        title = reader["title"].ToString(),
+                                        first = reader["first_name"].ToString(),
+                                        last = reader["last_name"].ToString()
+                                    },
+                                    email = reader["email"].ToString(),
+                                    phone = reader["phone"].ToString(),
+                                    login = new Login
+                                    {
+                                        uuid = reader["login_uuid"].ToString()
+                                    }
+                                };
+                                return Ok(user);
+                            }
+                            return NotFound(new { error = "Kullanıcı bulunamadı" });
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, new { error = ex.Message });
+            }
+        }
     }
 }
