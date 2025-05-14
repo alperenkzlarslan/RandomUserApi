@@ -5,6 +5,8 @@ using Microsoft.Extensions.Configuration;
 using RandomUserApi.Model;
 using System.ComponentModel.DataAnnotations;
 using System.Collections.Generic;
+using System.IO;
+using System.Threading.Tasks;
 
 namespace RandomUserApi.Controllers
 {
@@ -329,11 +331,18 @@ namespace RandomUserApi.Controllers
         }
 
         [HttpPut("{uuid}")]
-        public IActionResult UpdateUser(string uuid, [FromBody] Result user)
+        public async Task<IActionResult> UpdateUser(string uuid, [FromBody] UpdateUserDto user)
         {
-            if (user == null)
+            if (user == null ||
+                string.IsNullOrEmpty(user.gender) ||
+                user.name == null ||
+                string.IsNullOrEmpty(user.name.title) ||
+                string.IsNullOrEmpty(user.name.first) ||
+                string.IsNullOrEmpty(user.name.last) ||
+                string.IsNullOrEmpty(user.email) ||
+                string.IsNullOrEmpty(user.phone))
             {
-                return BadRequest(new { error = "Kullanıcı verisi gerekli" });
+                return BadRequest(new { error = "Tüm alanlar zorunludur!" });
             }
 
             try

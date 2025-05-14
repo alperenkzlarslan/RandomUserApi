@@ -76,6 +76,7 @@ async function editUser(uuid) {
         document.getElementById('editLastName').value = user.name?.last || '';
         document.getElementById('editEmail').value = user.email || '';
         document.getElementById('editPhone').value = user.phone || '';
+        document.getElementById('editGender').value = user.gender || '';
 
         // Modalı göster
         const modal = new bootstrap.Modal(document.getElementById('editModal'));
@@ -90,6 +91,7 @@ async function editUser(uuid) {
 async function saveUser() {
     const uuid = document.getElementById('editUuid').value;
     const userData = {
+        gender: document.getElementById('editGender').value,
         name: {
             title: document.getElementById('editTitle').value,
             first: document.getElementById('editFirstName').value,
