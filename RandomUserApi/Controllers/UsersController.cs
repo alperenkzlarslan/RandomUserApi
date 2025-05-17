@@ -143,7 +143,7 @@ namespace RandomUserApi.Controllers
                                         medium = reader["picture_medium"].ToString(),
                                         thumbnail = reader["picture_thumbnail"].ToString()
                                     },
-                                    nat = reader["nat"].ToString()
+                                    nat = reader["nat"].ToString(),
                                 };
                                 users.Add(user); //Her bir kullanıcı nesnesi, users listesine ekleniyor.
                             }
@@ -336,7 +336,7 @@ namespace RandomUserApi.Controllers
             if (user == null ||
                 string.IsNullOrEmpty(user.gender) ||
                 user.name == null ||
-                string.IsNullOrEmpty(user.name.title) ||
+                string.IsNullOrEmpty(user.username) ||
                 string.IsNullOrEmpty(user.name.first) ||
                 string.IsNullOrEmpty(user.name.last) ||
                 string.IsNullOrEmpty(user.email) ||
@@ -353,7 +353,7 @@ namespace RandomUserApi.Controllers
                     var sql = @"
                         UPDATE users SET 
                             gender = @gender,
-                            title = @title,
+                            login_username = @loginUsername,
                             first_name = @firstName,
                             last_name = @lastName,
                             email = @email,
@@ -364,7 +364,7 @@ namespace RandomUserApi.Controllers
                     {
                         cmd.Parameters.AddWithValue("uuid", uuid);
                         cmd.Parameters.AddWithValue("gender", user.gender);
-                        cmd.Parameters.AddWithValue("title", user.name?.title);
+                        cmd.Parameters.AddWithValue("loginUsername", user.username);
                         cmd.Parameters.AddWithValue("firstName", user.name?.first);
                         cmd.Parameters.AddWithValue("lastName", user.name?.last);
                         cmd.Parameters.AddWithValue("email", user.email);
@@ -407,7 +407,6 @@ namespace RandomUserApi.Controllers
                                     gender = reader["gender"].ToString(),
                                     name = new Name
                                     {
-                                        title = reader["title"].ToString(),
                                         first = reader["first_name"].ToString(),
                                         last = reader["last_name"].ToString()
                                     },
@@ -415,6 +414,7 @@ namespace RandomUserApi.Controllers
                                     phone = reader["phone"].ToString(),
                                     login = new Login
                                     {
+                                        username = reader["login_username"].ToString(),
                                         uuid = reader["login_uuid"].ToString()
                                     }
                                 };

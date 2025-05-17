@@ -7,104 +7,7 @@
     <title>Random User API</title>
     <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <style>
-        /* Tablo stilleri */
-        .table-container {
-            height: 500px;
-            overflow-y: auto;
-            direction: rtl;
-        }
-        .table {
-            direction: ltr;
-        }
-        .table thead th {
-            position: sticky;
-            top: 0;
-            background-color: #212529;
-            z-index: 1;
-        }
-        .table-container::-webkit-scrollbar {
-            width: 8px;
-        }
-        .table-container::-webkit-scrollbar-track {
-            background: #f1f1f1;
-        }
-        .table-container::-webkit-scrollbar-thumb {
-            background: #888;
-            border-radius: 4px;
-        }
-        .table-container::-webkit-scrollbar-thumb:hover {
-            background: #555;
-        }
-
-        /* Modal stilleri */
-        .modal-content {
-            border-radius: 15px;
-            box-shadow: 0 0 20px rgba(0,0,0,0.1);
-        }
-        .modal-header {
-            background-color: #f8f9fa;
-            border-bottom: 1px solid #dee2e6;
-            border-radius: 15px 15px 0 0;
-        }
-        .modal-title {
-            color: #212529;
-            font-weight: 600;
-        }
-        .modal-body {
-            padding: 20px;
-        }
-        .form-label {
-            font-weight: 500;
-            color: #495057;
-            margin-bottom: 8px;
-        }
-        .form-control {
-            border-radius: 8px;
-            border: 1px solid #ced4da;
-            padding: 10px;
-            transition: border-color 0.2s;
-        }
-        .form-control:focus {
-            border-color: #80bdff;
-            box-shadow: 0 0 0 0.2rem rgba(0,123,255,0.25);
-        }
-        .modal-footer {
-            border-top: 1px solid #dee2e6;
-            padding: 15px 20px;
-        }
-        .btn {
-            padding: 8px 20px;
-            border-radius: 8px;
-            font-weight: 500;
-            transition: all 0.2s;
-        }
-        .btn-primary {
-            background-color: #0d6efd;
-            border-color: #0d6efd;
-        }
-        .btn-primary:hover {
-            background-color: #0b5ed7;
-            border-color: #0a58ca;
-        }
-        .btn-secondary {
-            background-color: #6c757d;
-            border-color: #6c757d;
-        }
-        .btn-secondary:hover {
-            background-color: #5c636a;
-            border-color: #565e64;
-        }
-        /* Input grupları için stil */
-        .mb-3 {
-            margin-bottom: 1.5rem !important;
-        }
-        /* Zorunlu alanlar için yıldız işareti */
-        .required::after {
-            content: " *";
-            color: #dc3545;
-        }
-    </style>
+    <link rel="stylesheet" href="styles/style.css">
 </head>
 <body>
     <div class="container mt-5">
@@ -113,7 +16,7 @@
             <table class="table table-striped table-hover">
                 <thead class="table-dark">
                     <tr>
-                        <th>ID</th>
+                        <th>Kullanıcı Adı</th>
                         <th>Ad</th>
                         <th>Soyad</th>
                         <th>E-posta</th>
@@ -140,16 +43,16 @@
                     <form id="editForm">
                         <input type="hidden" id="editUuid">
                         <div class="mb-3">
-                            <label for="editTitle" class="form-label">Unvan</label>
-                            <input type="text" class="form-control" id="editTitle" placeholder="Unvan giriniz">
+                            <label for="editUsername" class="form-label">Kullanıcı Adı</label>
+                            <input type="text" class="form-control" id="editUsername" placeholder="Kullanıcı adınızı giriniz">
                         </div>
                         <div class="mb-3">
                             <label for="editFirstName" class="form-label required">Ad</label>
-                            <input type="text" class="form-control" id="editFirstName" placeholder="Ad giriniz" required>
+                            <input type="text" class="form-control" id="editFirstName" placeholder="Adınızı giriniz" required>
                         </div>
                         <div class="mb-3">
                             <label for="editLastName" class="form-label required">Soyad</label>
-                            <input type="text" class="form-control" id="editLastName" placeholder="Soyad giriniz" required>
+                            <input type="text" class="form-control" id="editLastName" placeholder="Soyadınızı giriniz" required>
                         </div>
                         <div class="mb-3">
                             <label for="editEmail" class="form-label required">E-posta</label>

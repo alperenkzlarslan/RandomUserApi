@@ -37,7 +37,7 @@ function displayUsers(users) {
     users.forEach(user => {
         const row = document.createElement('tr');
         row.innerHTML = `
-            <td>${user.login?.uuid || ''}</td>
+            <td>${user.login?.username || ''}</td>
             <td>${user.name?.first || ''}</td>
             <td>${user.name?.last || ''}</td>
             <td>${user.email || ''}</td>
@@ -71,7 +71,7 @@ async function editUser(uuid) {
         
         // Modal alanlarını doldur
         document.getElementById('editUuid').value = uuid;
-        document.getElementById('editTitle').value = user.name?.title || '';
+        document.getElementById('editUsername').value = user.login?.username || '';
         document.getElementById('editFirstName').value = user.name?.first || '';
         document.getElementById('editLastName').value = user.name?.last || '';
         document.getElementById('editEmail').value = user.email || '';
@@ -93,10 +93,10 @@ async function saveUser() {
     const userData = {
         gender: document.getElementById('editGender').value,
         name: {
-            title: document.getElementById('editTitle').value,
             first: document.getElementById('editFirstName').value,
             last: document.getElementById('editLastName').value
-        },
+            },
+        username: document.getElementById('editUsername').value,
         email: document.getElementById('editEmail').value,
         phone: document.getElementById('editPhone').value
     };
@@ -126,7 +126,7 @@ async function saveUser() {
         alert('Kullanıcı başarıyla güncellendi!');
     } catch (error) {
         console.error('Kullanıcı güncellenirken hata:', error);
-        alert('Kullanıcı güncellenirken bir hata oluştu!');
+        alert('Kullanıcı güncellenirken bir hata oluştu!', error.message);
     }
 }
 
