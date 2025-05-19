@@ -95,7 +95,7 @@ async function saveUser() {
         name: {
             first: document.getElementById('editFirstName').value,
             last: document.getElementById('editLastName').value
-            },
+        },
         username: document.getElementById('editUsername').value,
         email: document.getElementById('editEmail').value,
         phone: document.getElementById('editPhone').value

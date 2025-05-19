@@ -223,7 +223,7 @@ namespace RandomUserApi.Controllers
                         cmd.Parameters.AddWithValue("state", user.location?.state);
                         cmd.Parameters.AddWithValue("country", user.location?.country);
                         cmd.Parameters.AddWithValue("postcode", user.location?.postcode);
-                        
+
                         // Koordinat bilgileri
                         cmd.Parameters.AddWithValue("latitude", user.location?.coordinates?.latitude);
                         cmd.Parameters.AddWithValue("longitude", user.location?.coordinates?.longitude);
@@ -315,7 +315,7 @@ namespace RandomUserApi.Controllers
                     {
                         cmd.Parameters.AddWithValue("uuid", uuid);
                         int affectedRows = cmd.ExecuteNonQuery();
-                        
+
                         if (affectedRows == 0)
                         {
                             return NotFound(new { error = "Kullanıcı bulunamadı" });
@@ -371,7 +371,7 @@ namespace RandomUserApi.Controllers
                         cmd.Parameters.AddWithValue("phone", user.phone);
 
                         int affectedRows = cmd.ExecuteNonQuery();
-                        
+
                         if (affectedRows == 0)
                         {
                             return NotFound(new { error = "Kullanıcı bulunamadı" });
@@ -424,6 +424,53 @@ namespace RandomUserApi.Controllers
                         }
                     }
                 }
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, new { error = ex.Message });
+            }
+        }
+
+        [HttpPost]
+        public IActionResult AddUser([FromBody] UpdateUserDto userDto)
+        {
+            try
+            {
+                var sql = @"
+                    INSERT INTO users (
+                        gender,
+                        login_username,
+                        first_name, 
+                        last_name,      
+                        email,  
+                        phone,  
+                        login_uuid  
+                    ) VALUES (                  
+                        @gender,
+                        @loginUsername,
+                        @firstName, 
+                        @lastName,      
+                        @email,  
+                        @phone,  
+                        @loginUuid  
+                    )";
+                using (var conn = new NpgsqlConnection(_connectionString))
+                {
+                    conn.Open();
+                    using (var cmd = new NpgsqlCommand(sql, conn))
+                    {
+                        cmd.Parameters.AddWithValue("gender", userDto.gender);
+                        cmd.Parameters.AddWithValue("loginUsername", userDto.username);
+                        cmd.Parameters.AddWithValue("firstName", userDto.name?.first);
+                        cmd.Parameters.AddWithValue("lastName", userDto.name?.last);
+                        cmd.Parameters.AddWithValue("email", userDto.email);
+                        cmd.Parameters.AddWithValue("phone", userDto.phone);
+                        cmd.Parameters.AddWithValue("loginUuid", Guid.NewGuid().ToString());
+                        cmd.ExecuteNonQuery();
+                    }
+                }
+
+                return Ok(new { message = "Kullanıcı başarıyla eklendi" });
             }
             catch (Exception ex)
             {
