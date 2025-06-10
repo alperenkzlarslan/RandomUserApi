@@ -174,7 +174,7 @@ namespace RandomUserApi.Controllers
             }
         }
 
-        [HttpPost]
+        [HttpPost("create")]
         public IActionResult CreateUser([FromBody] Result user)
         {
             if (user == null)
@@ -431,7 +431,7 @@ namespace RandomUserApi.Controllers
             }
         }
 
-        [HttpPost]
+        [HttpPost("add")] //Kullanıcı Ekleme Methodu 
         public IActionResult AddUser([FromBody] UpdateUserDto userDto)
         {
             try

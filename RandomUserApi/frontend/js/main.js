@@ -155,4 +155,46 @@ async function deleteUser(uuid) {
             alert('Kullanıcı silinirken bir hata oluştu!');
         }
     }
-} 
+}
+
+// Yeni kullanıcı ekleme fonksiyonu
+async function addUser() {
+    const userData = {
+        gender: document.getElementById('addGender').value,
+        name: {
+            first: document.getElementById('addFirstName').value,
+            last: document.getElementById('addLastName').value
+        },
+        username: document.getElementById('addUsername').value,
+        email: document.getElementById('addEmail').value,
+        phone: document.getElementById('addPhone').value
+    };
+    try {
+        const response = await fetch('http://localhost:5073/api/users', {
+            method: 'POST',
+            headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(userData),
+            mode: 'cors'
+        });
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        const result = await response.json();
+        console.log('Yeni kullanıcı eklendi:', result);
+
+        // Modalı kapat
+        const modal = bootstrap.Modal.getInstance(document.getElementById('addUserModal'));
+        modal.hide();
+
+        // Tabloyu yenile
+        fetchUsers();
+        alert('Yeni kullanıcı başarıyla eklendi!');
+
+    } catch (error) {
+        console.error('Yeni kullanıcı eklenirken hata oluştu:', error);
+        alert('Yeni kullanıcı eklenirken bir hata oluştu!');
+    }
+}
