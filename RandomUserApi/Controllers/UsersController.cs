@@ -387,6 +387,7 @@ namespace RandomUserApi.Controllers
         }
 
         [HttpGet("{uuid}")]
+        [Route("api/users")]
         public IActionResult GetUser(string uuid)
         {
             try

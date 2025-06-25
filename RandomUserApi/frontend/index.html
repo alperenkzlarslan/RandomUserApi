@@ -24,10 +24,18 @@
                         <label for="addUsername" class="form-label">Kullanıcı Adı</label>
                         <input id="addUsername" placeholder="Kullanıcı Adı" class="form-control mb-2">
                     <div class="mb-3">
-                        <label for="addFirstName" class="form-label">Ad</label>
+                        <label for="addFirstName" class="form-label required">Ad</label>
                         <input id="addFirstName" placeholder="Ad" class="form-control mb-2" required>
-
-                    </div>
+                    <div class="mb-3">
+                        <label for="addLastName" class="form-label required">Soyad</label>
+                        <input id="addLastName" placeholder="Soyad" class="form-control mb-2" required>
+                    <div class="mb-3">
+                        <label for="addEmail" class="form-label required">E-Posta</label>
+                        <input id="addEmail" placeholder="Email" class="form-control mb-2" required>
+                    <div calss="mb-3">
+                        <label for="addPhone" class="form-label required required">Telefon</label>
+                        <input id="addPhone" placeholder="Telefon" class="form-control mb-2" required>
+                    <div>
                         <label for="addGender" class="form-label required">Cinsiyet</label>
                         <select class="form-control" id="addGender" required>
                             <option value="">Seçiniz</option>
@@ -35,9 +43,13 @@
                             <option value="female">Kadın</option>
                         </select>
                     </div>
-                    <input id="addLastName" placeholder="Soyad" class="form-control mb-2">
-                    <input id="addEmail" placeholder="Email" class="form-control mb-2">
-                    <input id="addPhone" placeholder="Telefon" class="form-control mb-2">
+                    </div>
+                    </div>
+                    </div>
+                    </div>
+                    </div>
+                        
+                    
                 </div>
                 <div class="modal-footer">
                     <button class="btn btn-primary" onclick="addUser()">Kaydet</button>
@@ -89,7 +101,7 @@
                         <input type="hidden" id="editUuid">
                         <div class="mb-3">
                             <label for="editUsername" class="form-label">Kullanıcı Adı</label>
-                            <input type="text" class="form-control" id="editUsername" placeholder="Kullanıcı adınızı giriniz">
+                            <input type="text" class="form-control" id="editUsername" placeholder="Kullanıcı adınızı giriniz" required>
                         </div>
                         <div class="mb-3">
                             <label for="editFirstName" class="form-label required">Ad</label>

@@ -170,7 +170,7 @@ async function addUser() {
         phone: document.getElementById('addPhone').value
     };
     try {
-        const response = await fetch('http://localhost:5073/api/users', {
+        const response = await fetch('http://localhost:5073/api/users/add', {
             method: 'POST',
             headers: {
                 'Accept': 'application/json',
