@@ -52,78 +52,76 @@ namespace RandomUserApi.Controllers
                 using var reader = cmd.ExecuteReader();
                 while (reader.Read())
                 {
-                    userSha256 = reader["login_sha256"].ToString();
-
-
+                    userSha256 = SafeGetString(reader, "login_sha256");
 
                     var user = new Result
                     {
-                        gender = reader["gender"].ToString(),
-
+                        gender = SafeGetString(reader, "gender"),
                         name = new Name
                         {
-                            title = reader["title"] != DBNull.Value ? reader["title"].ToString() : "",
-                            first = reader["first_name"].ToString(),
-                            last = reader["last_name"].ToString()
+                            title = SafeGetString(reader, "title"),
+                            first = SafeGetString(reader, "first_name"),
+                            last = SafeGetString(reader, "last_name")
                         },
                         location = new Location
                         {
                             street = new Street
                             {
-                                number = reader["street_number"] != DBNull.Value ? Convert.ToInt32(reader["street_number"]) : 0,
-                                name = reader["street_name"].ToString()
+                                number = SafeGetInt(reader, "street_number"),
+                                name = SafeGetString(reader, "street_name")
                             },
-                            city = reader["city"].ToString(),
-                            state = reader["state"].ToString(),
-                            country = reader["country"].ToString(),
-                            postcode = reader["postcode"].ToString(),
+                            city = SafeGetString(reader, "city"),
+                            state = SafeGetString(reader, "state"),
+                            country = SafeGetString(reader, "country"),
+                            postcode = SafeGetString(reader, "postcode"),
                             coordinates = new Coordinates
                             {
-                                latitude = reader["latitude"].ToString(),
-                                longitude = reader["longitude"].ToString()
+                                latitude = SafeGetString(reader, "latitude"),
+                                longitude = SafeGetString(reader, "longitude")
                             },
                             timezone = new Timezone
                             {
-                                offset = reader["timezone_offset"].ToString(),
-                                description = reader["timezone_description"].ToString()
+                                offset = SafeGetString(reader, "timezone_offset"),
+                                description = SafeGetString(reader, "timezone_description")
                             }
                         },
-                        email = reader["email"].ToString(),
+                        email = SafeGetString(reader, "email"),
                         login = new Login
                         {
-                            uuid = reader["login_uuid"].ToString(),
-                            username = reader["login_username"].ToString(),
-                            password = reader["login_password"].ToString(),
-                            salt = reader["login_salt"].ToString(),
-                            md5 = reader["login_md5"].ToString(),
-                            sha1 = reader["login_sha1"].ToString(),
-                            sha256 = reader["login_sha256"].ToString()
+                            uuid = SafeGetString(reader, "login_uuid"),
+                            username = SafeGetString(reader, "login_username"),
+                            password = SafeGetString(reader, "login_password"),
+                            salt = SafeGetString(reader, "login_salt"),
+                            md5 = SafeGetString(reader, "login_md5"),
+                            sha1 = SafeGetString(reader, "login_sha1"),
+                            sha256 = SafeGetString(reader, "login_sha256")
                         },
                         dob = new Dob
                         {
-                            date = Convert.ToDateTime(reader["dob_date"]),
-                            age = Convert.ToInt32(reader["dob_age"])
+                            date = SafeGetDate(reader, "dob_date"),
+                            age = SafeGetInt(reader, "dob_age")
                         },
                         registered = new Registered
                         {
-                            date = Convert.ToDateTime(reader["registered_date"]),
-                            age = Convert.ToInt32(reader["registered_age"])
+                            date = SafeGetDate(reader, "registered_date"),
+                            age = SafeGetInt(reader, "registered_age")
                         },
-                        phone = reader["phone"].ToString(),
-                        cell = reader["cell"].ToString(),
+                        phone = SafeGetString(reader, "phone"),
+                        cell = SafeGetString(reader, "cell"),
                         id = new Id
                         {
-                            name = reader["id_name"].ToString(),
-                            value = reader["id_value"].ToString()
+                            name = SafeGetString(reader, "id_name"),
+                            value = SafeGetString(reader, "id_value")
                         },
                         picture = new Picture
                         {
-                            large = reader["picture_large"].ToString(),
-                            medium = reader["picture_medium"].ToString(),
-                            thumbnail = reader["picture_thumbnail"].ToString()
+                            large = SafeGetString(reader, "picture_large"),
+                            medium = SafeGetString(reader, "picture_medium"),
+                            thumbnail = SafeGetString(reader, "picture_thumbnail")
                         },
-                        nat = reader["nat"].ToString(),
+                        nat = SafeGetString(reader, "nat")
                     };
+
                     users.Add(user);
                 }
 
@@ -192,25 +190,28 @@ namespace RandomUserApi.Controllers
             {
                 var sql = @"
                     INSERT INTO users (
-                        gender, login_username, first_name, last_name,
+                        gender, login_username, title, first_name, last_name,
                         email, phone, login_uuid
                     ) VALUES (
-                        @gender, @loginUsername, @firstName, @lastName,
+                        @gender, @loginUsername, @title, @firstName, @lastName,
                         @email, @phone, @loginUuid
                     )";
 
                 using var conn = new NpgsqlConnection(_connectionString);
                 conn.Open();
                 using var cmd = new NpgsqlCommand(sql, conn);
-                cmd.Parameters.AddWithValue("gender", userDto.gender);
-                cmd.Parameters.AddWithValue("loginUsername", userDto.username);
-                cmd.Parameters.AddWithValue("firstName", userDto.name?.first);
-                cmd.Parameters.AddWithValue("lastName", userDto.name?.last);
-                cmd.Parameters.AddWithValue("email", userDto.email);
-                cmd.Parameters.AddWithValue("phone", userDto.phone);
-                cmd.Parameters.AddWithValue("loginUuid", Guid.NewGuid().ToString());
-                cmd.ExecuteNonQuery();
 
+                // Null veya bos kontrolü ile varsayılan atamalar
+                cmd.Parameters.AddWithValue("gender", string.IsNullOrWhiteSpace(userDto.gender) ? "bilinmiyor" : userDto.gender);
+                cmd.Parameters.AddWithValue("loginUsername", string.IsNullOrWhiteSpace(userDto.username) ? "anonymous" : userDto.username);
+                cmd.Parameters.AddWithValue("title", string.IsNullOrWhiteSpace(userDto.name?.title) ? "" : userDto.name.title);
+                cmd.Parameters.AddWithValue("firstName", string.IsNullOrWhiteSpace(userDto.name?.first) ? "" : userDto.name.first);
+                cmd.Parameters.AddWithValue("lastName", string.IsNullOrWhiteSpace(userDto.name?.last) ? "" : userDto.name.last);
+                cmd.Parameters.AddWithValue("email", string.IsNullOrWhiteSpace(userDto.email) ? "-" : userDto.email);
+                cmd.Parameters.AddWithValue("phone", string.IsNullOrWhiteSpace(userDto.phone) ? "-" : userDto.phone);
+                cmd.Parameters.AddWithValue("loginUuid", Guid.NewGuid().ToString());
+
+                cmd.ExecuteNonQuery();
                 return Ok(new { message = "Kullanıcı başarıyla eklendi" });
             }
             catch (Exception ex)
@@ -218,6 +219,7 @@ namespace RandomUserApi.Controllers
                 return StatusCode(StatusCodes.Status500InternalServerError, new { error = ex.Message });
             }
         }
+
 
         [HttpPut("{uuid}")]
         public async Task<IActionResult> UpdateUser(string uuid, [FromBody] UpdateUserDto user)
@@ -290,5 +292,23 @@ namespace RandomUserApi.Controllers
                 return StatusCode(StatusCodes.Status500InternalServerError, new { error = ex.Message });
             }
         }
+        //Yardımcı Methodlar 
+        private string SafeGetString(NpgsqlDataReader reader, string columnName)
+        {
+            return reader[columnName] != DBNull.Value ? reader[columnName].ToString() : "";
+        }
+
+        private int SafeGetInt(NpgsqlDataReader reader, string columnName)
+        {
+            return reader[columnName] != DBNull.Value ? Convert.ToInt32(reader[columnName]) : 0;
+        }
+
+        private DateTime SafeGetDate(NpgsqlDataReader reader, string columnName)
+        {
+            return reader[columnName] != DBNull.Value ? Convert.ToDateTime(reader[columnName]) : DateTime.MinValue;
+        }
+
     }
 }
+
+
